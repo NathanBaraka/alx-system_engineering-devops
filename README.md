@@ -1,1 +1,1 @@
-These are Shell redirection files and permissions
+This is a Readme file on redirection project
