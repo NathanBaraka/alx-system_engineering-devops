@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#configaration of nginx to listen at port 70
+ls -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+#restarting nginx
+sudo service nginx restart
+#Termination of the previous nginx process ID.
+kill "$(pgrep 'nginx' | head -1)"
