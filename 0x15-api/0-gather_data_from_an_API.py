@@ -1,46 +1,78 @@
 #!/usr/bin/python3
 """
-Returns to-do list information for a given employee ID.
-
-This script takes an employee ID as a command-line argument and fetches
-the corresponding user information and to-do list from the JSONPlaceholder API.
-It then prints the tasks completed by the employee.
+This script gathers employee data from an API.
 """
 
 import requests
 import sys
+import re
 
 
-if __name__ == "__main__":
-    try:
-        # Base URL for the JSONPlaceholder API
-        url = "https://jsonplaceholder.typicode.com/"
+def get_employee_data(employee_id):
+    """
+    Get the employee data from the API.
+    """
+    url = "{}/users/{}".format(REST_API, employee_id)
+    return requests.get(url).json()
 
-        # Get the employee information using the provided employee ID
-        employee_id = sys.argv[1]
-        user_response = requests.get(url + "users/{}".format(employee_id))
-        user_response.raise_for_status()
-        user = user_response.json()
 
-        # Get the to-do list for the employee using the provided employee ID
-        params = {"userId": employee_id}
-        todos_response = requests.get(url + "todos", params=params)
-        todos_response.raise_for_status()
-        todos = todos_response.json()
+def get_tasks_data():
+    """
+    Get the tasks data from the API.
+    """
+    url = "{}/todos".format(REST_API)
+    return requests.get(url).json()
 
-        # Filter completed tasks and count them
-        completed = [t.get("title") for t in todos if t.get("completed") is True]
 
-        # Print the employee's name and the number of completed tasks
-        print("Employee {} is done with tasks({}/{}):".format(
-            user.get("name"), len(completed), len(todos)))
+def get_employee_name(employee_data):
+    """
+    Get the employee name.
+    """
+    return employee_data.get('name')
 
-        # Print the completed tasks one by one with indentation
-        for complete in completed:
-            print("\t {}".format(complete))
 
-    except IndexError:
-        print("Usage: {} <employee_id>".format(sys.argv[0]))
-    except requests.RequestException as e:
-        print("Error fetching data from API:", e)
+def get_tasks_for_employee(employee_id, tasks_data):
+    """
+    Get the tasks for the employee.
+    """
+    return list(filter(lambda x: x.get('userId') == employee_id, tasks_data))
 
+
+def get_completed_tasks_for_employee(tasks):
+    """
+    Get the completed tasks for the employee.
+    """
+    return list(filter(lambda x: x.get('completed'), tasks))
+
+
+def print_tasks(tasks):
+    """
+    Print the completed tasks.
+    """
+    for task in tasks:
+        print('\t {}'.format(task.get('title')))
+
+
+REST_API = "https://jsonplaceholder.typicode.com"
+
+
+def main():
+    """
+    Main function to execute the script.
+    """
+    if len(sys.argv) > 1:
+        employee_id = int(sys.argv[1])
+        if re.fullmatch(r'\d+', str(employee_id)):
+            employee_data = get_employee_data(employee_id)
+            tasks_data = get_tasks_data()
+            employee_name = get_employee_name(employee_data)
+            tasks = get_tasks_for_employee(employee_id, tasks_data)
+            completed_tasks = get_completed_tasks_for_employee(tasks)
+            print('Employee {} is done with tasks({}/{}):'.format(
+                employee_name, len(completed_tasks), len(tasks)))
+            if len(completed_tasks) > 0:
+                print_tasks(completed_tasks)
+
+
+if __name__ == '__main__':
+    main()
