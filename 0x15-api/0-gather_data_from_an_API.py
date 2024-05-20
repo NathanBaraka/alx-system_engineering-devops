@@ -1,78 +1,32 @@
 #!/usr/bin/python3
 """
-This script gathers employee data from an API.
+This script takes an employee ID as a command-line argument and fetches
+the corresponding user information and to-do list from the JSONPlaceholder API.
+It then prints the tasks completed by the employee.
 """
 
 import requests
 import sys
-import re
 
 
-def get_employee_data(employee_id):
-    """
-    Get the employee data from the API.
-    """
-    url = "{}/users/{}".format(REST_API, employee_id)
-    return requests.get(url).json()
+if __name__ == "__main__":
+    # The base URL for the JSONPlaceholder API.
+    url = "https://jsonplaceholder.typicode.com/"
 
+    # Getting the employees info using the provided employee ID.
+    employee_id = sys.argv[1]
+    user = requests.get(url + "users/{}".format(employee_id)).json()
 
-def get_tasks_data():
-    """
-    Get the tasks data from the API.
-    """
-    url = "{}/todos".format(REST_API)
-    return requests.get(url).json()
+    # Getting the to-do list for the employee using the provided employee ID.
+    params = {"userId": employee_id}
+    todos = requests.get(url + "todos", params).json()
 
+    # Filterring completed tasks and counting them.
+    completed = [t.get("title") for t in todos if t.get("completed") is True]
 
-def get_employee_name(employee_data):
-    """
-    Get the employee name.
-    """
-    return employee_data.get('name')
+    # Printing the employees' name and the numb of completed tasks.
+    print("Employee {} is done with tasks({}/{}):".format(
+        user.get("name"), len(completed), len(todos)))
 
-
-def get_tasks_for_employee(employee_id, tasks_data):
-    """
-    Get the tasks for the employee.
-    """
-    return list(filter(lambda x: x.get('userId') == employee_id, tasks_data))
-
-
-def get_completed_tasks_for_employee(tasks):
-    """
-    Get the completed tasks for the employee.
-    """
-    return list(filter(lambda x: x.get('completed'), tasks))
-
-
-def print_tasks(tasks):
-    """
-    Print the completed tasks.
-    """
-    for task in tasks:
-        print('\t {}'.format(task.get('title')))
-
-
-REST_API = "https://jsonplaceholder.typicode.com"
-
-
-def main():
-    """
-    Main function to execute the script.
-    """
-    if len(sys.argv) > 1:
-        employee_id = int(sys.argv[1])
-        if re.fullmatch(r'\d+', str(employee_id)):
-            employee_data = get_employee_data(employee_id)
-            tasks_data = get_tasks_data()
-            employee_name = get_employee_name(employee_data)
-            tasks = get_tasks_for_employee(employee_id, tasks_data)
-            completed_tasks = get_completed_tasks_for_employee(tasks)
-            print('Employee {} is done with tasks({}/{}):'.format(
-                employee_name, len(completed_tasks), len(tasks)))
-            if len(completed_tasks) > 0:
-                print_tasks(completed_tasks)
-
-
-if __name__ == '__main__':
-    main()
+    # Printing the completed tasks one by one with indentation.
+    [print("\t {}".format(complete)) for complete in completed]
