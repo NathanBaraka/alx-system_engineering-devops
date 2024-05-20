@@ -2,7 +2,8 @@
 """
 Exports to-do list information of all employees to JSON format.
 
-This script retrieves the user details and their respective to-do lists for all employees
+This script retrieves the user details and their
+respective to-do lists for all employees
 from the JSONPlaceholder API and saves the data into a JSON file.
 """
 
@@ -18,7 +19,8 @@ def fetch_user_data():
     # Fetch the list of all users (employees)
     users = requests.get(url + "users").json()
 
-    # Create a dictionary containing the to-do list information of all employees
+    # Create a dictionary containing the
+    # to-do list information of all employees
     data_to_export = {}
     for user in users:
         user_id = user["id"]
